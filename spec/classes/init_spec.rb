@@ -1,54 +1,44 @@
 require 'spec_helper'
 describe 'tacacsplus' do
-
   context 'with default params on osfamily RedHat' do
     let :facts do
       {
         :osfamily => 'RedHat'
       }
     end
-    it { should include_class('tacacsplus') }
-    it { should contain_package('tacacs+').with ({
-        'ensure'    => 'installed'
+    it { should contain_class('tacacsplus') }
+    it do
+      should contain_package('tacacs+').with({
+        'ensure' => 'installed'
       })
-    }
+    end
 
-    it { should contain_file('/etc/init.d/tac_plus').with({
-      'ensure' => 'present',
-      'owner'  => 'root',
-      'group'  => 'root',
-      'mode'   => '0744',
-      })
-    }
+    it { should_not contain_file('/etc/init.d/tac_plus') }
 
-    it { should contain_file('/etc/tac_plus.conf').with({
-      'ensure' => 'present',
-      'owner'  => 'root',
-      'group'  => 'root',
-      'require' => 'Package[tacacs+]',
+    it do
+      should contain_file('/etc/tac_plus.conf').with({
+        'ensure'  => 'file',
+        'owner'   => 'root',
+        'group'   => 'root',
+        'require' => 'Package[tacacs+]',
+        'notify'  => 'Service[tac_plus]',
       })
-    }
+    end
 
     it { should contain_file('/etc/tac_plus.conf').with_content(/^key = \"CHANGEME\"$/) }
     it { should_not contain_file('/etc/tac_plus.conf').with_content(/user = /) }
     it { should_not contain_file('/etc/tac_plus.conf').with_content(/^acl = /) }
 
-    it { should contain_file('/etc/pam.d/tac_plus').with({
-      'ensure' => 'present',
-      'owner'  => 'root',
-      'group'  => 'root',
-      'require' => 'Package[tacacs+]',
-      })
-    }
+    it { should_not contain_file('/etc/pam.d/tac_plus') }
 
-    it { should contain_service('tac_plus').with({
-      'ensure' => 'running',
-      'enable' => 'true',
-      'hasstatus' => 'false',
-      'pattern'=> 'tac_plus',
-      'require' => ['File[/etc/tac_plus.conf]', 'File[/etc/pam.d/tac_plus]', 'File[/etc/init.d/tac_plus]'],
+    it do
+      should contain_service('tac_plus').with({
+        'ensure'    => 'running',
+        'enable'    => 'true',
+        'hasstatus' => 'false',
+        'pattern'   => 'tac_plus',
       })
-    }
+    end
   end
 
   context 'with non-supported osfamily Debian' do
@@ -58,9 +48,7 @@ describe 'tacacsplus' do
       }
     end
     it 'should fail' do
-      expect {
-        should include_class('tacacsplus')
-      }.to raise_error(Puppet::Error,/Operating system not supported/)
+      expect { should contain_class('tacacsplus') }.to raise_error(Puppet::Error, /Operating system not supported/)
     end
   end
 
@@ -78,7 +66,7 @@ describe 'tacacsplus' do
             'member' => 'all_access',
             'password' => 'secret',
             'cmd' => {
-              'command' => [{'permit' => 'all'},{'deny' => 'nothing'}]
+              'command' => [{ 'permit' => 'all' }, { 'deny' => 'nothing' }]
             }
           }
         }
@@ -103,8 +91,8 @@ describe 'tacacsplus' do
     let :params do
       {
         :acl => {
-          'acl_name' => [{'permit' => '127.0.0.1'},{'deny' => '192.168.0.*'}],
-          'other_acl' => [{'permit' => '*'}]
+          'acl_name' => [{ 'permit' => '127.0.0.1' }, { 'deny' => '192.168.0.*' }],
+          'other_acl' => [{ 'permit' => '*' }]
         }
       }
     end
@@ -126,7 +114,7 @@ describe 'tacacsplus' do
           'group_name' => {
             'acl' => 'acl_name',
             'service' => {
-              'exec' => [{'priv-lvl' => '15'}]
+              'exec' => [{ 'priv-lvl' => '15' }]
             }
           }
         }
