@@ -5,10 +5,10 @@
 #
 class tacacsplus (
   $tacplus_pkg                   = 'tacacs+',
-  $acl                           = 'NONE',
-  $users                         = 'NONE',
-  $groups                        = 'NONE',
-  $localusers                    = 'NONE',
+  $acl                           = {},
+  $users                         = {},
+  $groups                        = {},
+  $localusers                    = {},
   $key                           = 'CHANGEME',
   $default_group                 = 'all_access',
   $default_group_login           = 'PAM',
@@ -35,6 +35,38 @@ class tacacsplus (
     $tac_plus_template_real = $tac_plus_template
   }
   validate_string($tac_plus_template_real)
+
+  if $acl == 'NONE' {
+    notify { '*** DEPRECATION WARNING***: $tacacsplus::acl default of <NONE> was changed to an empty hash {}. Please update your configuration. Support for <NONE> will be removed in the near future! Please update your configuration.' : }
+    $acl_real = {}
+  }
+  else {
+    $acl_real = $acl
+  }
+
+  if $localusers == 'NONE' {
+    notify { '*** DEPRECATION WARNING***: $tacacsplus::localusers default of <NONE> was changed to an empty hash {}. Please update your configuration. Support for <NONE> will be removed in the near future! Please update your configuration.' : }
+    $localusers_real = {}
+  }
+  else {
+    $localusers_real = $localusers
+  }
+
+  if $groups == 'NONE' {
+    notify { '*** DEPRECATION WARNING***: $tacacsplus::groups default of <NONE> was changed to an empty hash {}. Please update your configuration. Support for <NONE> will be removed in the near future! Please update your configuration.' : }
+    $groups_real = {}
+  }
+  else {
+    $groups_real = $groups
+  }
+
+  if $users == 'NONE' {
+    notify { '*** DEPRECATION WARNING***: $tacacsplus::users default of <NONE> was changed to an empty hash {}. Please update your configuration. Support for <NONE> will be removed in the near future! Please update your configuration.' : }
+    $users_real = {}
+  }
+  else {
+    $users_real = $users
+  }
 
   package { $tacplus_pkg:
     ensure => 'installed',
